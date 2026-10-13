@@ -240,4 +240,178 @@ $('#profileBtn').onclick=()=>$('#profileModal').classList.add('show');$('#profil
 $('#profileModal').addEventListener('click',e=>{if(e.target===$('#profileModal'))$('#profileModal').classList.remove('show')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal').forEach(m=>m.classList.remove('show'))});
 </script>
+  
+<!-- FLIKRX Login / Sign Up -->
+<style>
+  .auth-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+  }
+  .auth-actions button {
+    cursor: pointer;
+    padding: 8px 12px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #e50914;
+    color: white;
+  }
+  #authBox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #000b;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #authBox .auth-card {
+    width: 100%;
+    max-width: 360px;
+    padding: 24px;
+    border-radius: 14px;
+    background: #171717;
+    color: white;
+  }
+  #authBox input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 7px;
+    border: 1px solid #555;
+    background: #242424;
+    color: white;
+  }
+  #authBox button {
+    cursor: pointer;
+    padding: 10px 14px;
+    margin: 5px 4px 5px 0;
+    border: 0;
+    border-radius: 7px;
+  }
+  #authMessage { font-size: 13px; overflow-wrap: anywhere; }
+</style>
+
+<div class="auth-actions" id="authActions">
+  <button type="button" id="openAuth">Login / Sign up</button>
+</div>
+
+<div id="authBox">
+  <div class="auth-card">
+    <h2 id="authHeading">FLIKRX Login</h2>
+    <p>Login karein ya naya account banayein.</p>
+    <form id="authForm">
+      <input id="authEmail" type="email" placeholder="Email address" required>
+      <input id="authPassword" type="password" placeholder="Password (minimum 6 characters)" minlength="6" required>
+      <button type="submit" id="loginButton">Login</button>
+      <button type="button" id="signupButton">Sign up</button>
+      <button type="button" id="closeAuth">Close</button>
+    </form>
+    <p id="authMessage" role="status"></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  // Apni Supabase Project URL aur Publishable key yahan daalein.
+  const SUPABASE_URL = "https://zfwvnhhfpglutnybgzha.supabase.co/rest/v1/";
+  const SUPABASE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+  const message = document.getElementById("authMessage");
+  const box = document.getElementById("authBox");
+  const heading = document.getElementById("authHeading");
+  const form = document.getElementById("authForm");
+  const loginButton = document.getElementById("loginButton");
+  const signupButton = document.getElementById("signupButton");
+  const openButton = document.getElementById("openAuth");
+  let mode = "login";
+  let client = null;
+
+  function showMessage(text) {
+    message.textContent = text;
+  }
+
+  function getClient() {
+    if (SUPABASE_URL.startsWith("PASTE_") ||
+        SUPABASE_KEY.startsWith("PASTE_")) {
+      showMessage("Pehle code mein Supabase URL aur Publishable key set karein.");
+      return null;
+    }
+    if (!client) {
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    return client;
+  }
+
+  function open(modeToUse) {
+    mode = modeToUse || "login";
+    heading.textContent = mode === "login" ? "FLIKRX Login" : "Create Account";
+    loginButton.style.display = mode === "login" ? "" : "none";
+    signupButton.style.display = mode === "signup" ? "none" : "";
+    box.style.display = "flex";
+    showMessage("");
+  }
+
+  openButton.addEventListener("click", () => open("login"));
+  document.getElementById("closeAuth").addEventListener("click", () => {
+    box.style.display = "none";
+  });
+  signupButton.addEventListener("click", () => open("signup"));
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const db = getClient();
+    if (!db) return;
+
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value;
+    loginButton.disabled = true;
+    signupButton.disabled = true;
+    showMessage("Please wait...");
+
+    try {
+      if (mode === "login") {
+        const { error } = await db.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showMessage("Login successful!");
+        openButton.textContent = "My Account";
+      } else {
+        const { data, error } = await db.auth.signUp({ email, password });
+        if (error) throw error;
+        showMessage(
+          data.session
+            ? "Account created! You are logged in."
+            : "Account created. Email inbox check karein aur confirmation link par click karein."
+        );
+      }
+    } catch (error) {
+      showMessage(error.message || "Kuch galat hua. Dobara try karein.");
+    } finally {
+      loginButton.disabled = false;
+      signupButton.disabled = false;
+    }
+  });
+
+  async function updateAccount() {
+    const db = getClient();
+    if (!db) return;
+    const { data } = await db.auth.getSession();
+    if (data.session) {
+      openButton.textContent = "My Account / Logout";
+      openButton.onclick = async () => {
+        if (confirm("Logout karna hai?")) {
+          await db.auth.signOut();
+          location.reload();
+        }
+      };
+    }
+  }
+  updateAccount();
+})();
+</script>
+
 </body></html>
