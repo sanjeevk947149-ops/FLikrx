@@ -240,7 +240,6 @@ $('#profileBtn').onclick=()=>$('#profileModal').classList.add('show');$('#profil
 $('#profileModal').addEventListener('click',e=>{if(e.target===$('#profileModal'))$('#profileModal').classList.remove('show')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal').forEach(m=>m.classList.remove('show'))});
 </script>
-  
 <!-- FLIKRX Login / Sign Up -->
 <style>
   .auth-actions {
@@ -298,7 +297,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal').forEach
 <div class="auth-actions" id="authActions">
   <button type="button" id="openAuth">Login / Sign up</button>
 </div>
-
 <div id="authBox">
   <div class="auth-card">
     <h2 id="authHeading">FLIKRX Login</h2>
@@ -313,7 +311,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal').forEach
     <p id="authMessage" role="status"></p>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
@@ -329,11 +326,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal').forEach
   const openButton = document.getElementById("openAuth");
   let mode = "login";
   let client = null;
-
   function showMessage(text) {
     message.textContent = text;
   }
-
   function getClient() {
     if (SUPABASE_URL.startsWith("PASTE_") ||
         SUPABASE_KEY.startsWith("PASTE_")) {
